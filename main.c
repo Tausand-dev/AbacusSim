@@ -18,25 +18,10 @@
 #define PIN_C PB3
 #define PIN_D PB4
 
-#define RANGE0 0
-#define RANGE1 31250
-#define RANGE2 6250
-#define RANGE3 279
-#define RANGE4 56
-#define RANGE5 12
-#define RANGE6 3
-#define RANGE7 1
-
-#define FREQ0 0
-#define FREQ1 1
-#define FREQ2 5
-#define FREQ3 112
-#define FREQ4 558
-#define FREQ5 2604
-#define FREQ6 10417
-#define FREQ7 31250
-
 char text_buffer[32];
+
+const uint16_t RANGES[16] = {0, 31250, 15625, 7102, 3397, 1645, 772, 368, 176, 84, 40, 19, 9, 4, 2, 1};
+const uint16_t FREQS[16] = {0, 1, 2, 4, 9, 19, 40, 85, 178, 372, 781, 1645, 3472, 7813, 15625, 31250};
 
 volatile uint16_t counterA, counterB, counterC, counterD;
 volatile uint16_t interA, interB, interC, interD;
@@ -92,8 +77,8 @@ void initOuts(void)
 
 uint16_t readADC(uint8_t channel)
 {
-	uint8_t mask = 0b00000111;
-	channel &= mask;  // AND operation with 7
+  uint8_t mask = 0b00000111;
+  channel &= mask;  // AND operation with 7
   ADMUX = (ADMUX & ~mask) | channel; // clears the bottom 3 bits before ORing
 
   ADCSRA |= (1 << ADSC); // start single convertion
@@ -104,79 +89,7 @@ uint16_t readADC(uint8_t channel)
 
 uint8_t getRange(uint8_t channel)
 {
-	return readADC(channel) / 128;
-}
-
-uint16_t getInterval(uint8_t range)
-{
-	if(range == 0)
-	{
-		return RANGE0;
-	}
-	else if(range == 1)
-	{
-		return RANGE1;
-	}
-	else if(range == 2)
-	{
-		return RANGE2;
-	}
-	else if(range == 3)
-	{
-		return RANGE3;
-	}
-	else if(range == 4)
-	{
-		return RANGE4;
-	}
-	else if(range == 5)
-	{
-		return RANGE5;
-	}
-	else if(range == 6)
-	{
-		return RANGE6;
-	}
-	else
-	{
-		return RANGE7;
-	}
-}
-
-uint16_t getFreq(uint8_t range)
-{
-	if(range == 0)
-	{
-		return FREQ0;
-	}
-	else if(range == 1)
-	{
-		return FREQ1;
-	}
-	else if(range == 2)
-	{
-		return FREQ2;
-	}
-	else if(range == 3)
-	{
-		return FREQ3;
-	}
-	else if(range == 4)
-	{
-		return FREQ4;
-	}
-	else if(range == 5)
-	{
-		return FREQ5;
-	}
-	else if(range == 6)
-	{
-		return FREQ6;
-	}
-	else
-	{
-		return FREQ7;
-	}
+ return readADC(channel) / 64;
 }
 
 void resetCounters(void)
@@ -197,9 +110,9 @@ void resetCounters(void)
 void welcomeScreen(void)
 {
 	lcd_home();
-	snprintf(text_buffer, sizeof(text_buffer), "Tausand\n  AbacusSim v4 ");
+	snprintf(text_buffer, sizeof(text_buffer), "Abacus\n Tester 30 kHz");
 	lcd_puts(text_buffer);
-	_delay_ms(2000);
+	_delay_ms(3000);
 	lcd_clrscr();
 	lcd_init(LCD_DISP_ON);
 	_delay_ms(500);
@@ -214,10 +127,9 @@ void toLCD(uint16_t freqA, uint16_t freqB, uint16_t freqC, uint16_t freqD)
 
 int main(void)
 {
-	uint8_t reset, cleanLCD;
+	uint8_t reset;
 	uint16_t cA, cB, cC, cD;
 	uint16_t iA, iB, iC, iD;
-	uint16_t fA = 0, fB = 0, fC = 0, fD = 0;
 	lcd_init(LCD_DISP_ON_BLINK);
 
 	initADC();
@@ -228,7 +140,7 @@ int main(void)
 	resetCounters();
 
 	welcomeScreen();
-	toLCD(fA, fB, fC, fD);
+	toLCD(0, 0, 0, 0);
 
 	sei();
 
@@ -241,40 +153,36 @@ int main(void)
 		cC = getRange(2);
 		cD = getRange(3);
 
-		iA = getInterval(cA);
-		iB = getInterval(cB);
-		iC = getInterval(cC);
-		// iD = getInterval(cD);
+		iA = RANGES[cA];
+		iB = RANGES[cB];
+		iC = RANGES[cC];
+		iD = RANGES[cD];
 
 		if(iA != interA)
 		{
 			interA = iA;
-			fA = getFreq(cA);
 			reset = 1;
 		}
 		else if(iB != interB)
 		{
 			interB = iB;
-			fB = getFreq(cB);
 			reset = 1;
 		}
 		else if(iC != interC)
 		{
 			interC = iC;
-			fC = getFreq(cC);
 			reset = 1;
 		}
 		else if(iD != interD)
 		{
 			interD = iD;
-			fD = getFreq(cD);
 			reset = 1;
 		}
 
 		if(reset)
 		{
 			resetCounters();
-			toLCD(fA, fB, fC, fD);
+			toLCD(FREQS[cA], FREQS[cB], FREQS[cC], FREQS[cD]);
 		}
 		_delay_ms(100);
 	}
