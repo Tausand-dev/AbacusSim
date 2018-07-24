@@ -1,0 +1,12 @@
+24 de julio de 2018
+
+Datos medidos usando Arduino Tester kHz
+
+Retrasos entre señales
+----------------------
+
+Se ponen en los cuatro canales a producir señales de 31250Hz.
+
+Retraso 1-2:	1.564us
+Retraso 1-3:	3.124us
+Retraso 1-4:	4.684us
