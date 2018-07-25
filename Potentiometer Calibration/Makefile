@@ -21,24 +21,24 @@ MCU = atmega328p
 # mcu clock frequency
 CLK = 16000000
 # avr programmer (and port if necessary)
-# e.g. PRG = usbtiny -or- PRG = arduino -P /dev/tty.usbmodem411
-PRG = arduino -P /dev/ttyUSB0 -b 57600
+# e.g. PRG = usbtiny -or- PRG = arduino -P /dev/tty.usbmodem411 avrisp2
+PRG = arduino -P /dev/ttyUSB0 #-b 57600
 # fuse values for avr: low, high, and extended
 # these values are from an Arduino Uno (ATMega328P)
 # see http://www.engbedded.com/fusecalc/ for other MCUs and options
-# LFU = 0xFF
-# HFU = 0xDE
-# EFU = 0x05
+# LFU = 0x00
+# HFU = 0x00
+# EFU = 0x00
 
-LFU = 0xFF
-HFU = 0xDE
-EFU = 0x05
+LFU = 0x00
+HFU = 0x00
+EFU = 0x00
 
 # program source files (not including external libraries)
-SRC = $(PRJ).cpp
+SRC = $(PRJ)#.cpp
 # where to look for external libraries (consisting of .c/.cpp files and .h files)
 # e.g. EXT = ../../EyeToSee ../../YouSART
-EXT = .
+EXT = . Serial/
 
 
 #################################################################################################
@@ -46,9 +46,9 @@ EXT = .
 #################################################################################################
 
 # include path
-INCLUDE := $(foreach dir, $(EXT), -I $(dir))
+INCLUDE := $(foreach dir, $(EXT), -I$(dir))
 # c flags
-CFLAGS    = -Wall -O2 -DF_CPU=$(CLK) -mmcu=$(MCU) $(INCLUDE)
+CFLAGS    = -Wall -Os -DF_CPU=$(CLK) -mmcu=$(MCU) $(INCLUDE)
 # any aditional flags for c++
 CPPFLAGS =
 
@@ -64,7 +64,7 @@ CFILES    = $(filter %.c, $(SRC))
 EXTC     := $(foreach dir, $(EXT), $(wildcard $(dir)/*.c))
 CPPFILES  = $(filter %.cpp, $(SRC))
 EXTCPP   := $(foreach dir, $(EXT), $(wildcard $(dir)/*.cpp))
-OBJ       = $(CFILES:.c=.o) $(EXTC:.c=.o) # $(CPPFILES:.cpp=.o) $(EXTCPP:.cpp=.o)
+OBJ       = $(CFILES:.c=.o) $(EXTC:.c=.o) $(CPPFILES:.cpp=.o) $(EXTCPP:.cpp=.o)
 
 # user targets
 # compile all files
@@ -107,5 +107,6 @@ $(PRJ).elf: $(OBJ)
 # hex file
 $(PRJ).hex: $(PRJ).elf
 	rm -f $(PRJ).hex
+	echo $(OBJ)
 	$(OBJCOPY) -j .text -j .data -O ihex $(PRJ).elf $(PRJ).hex
 	$(SIZE) $(PRJ).elf

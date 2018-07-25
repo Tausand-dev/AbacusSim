@@ -3,16 +3,6 @@
 #include <avr/interrupt.h>
 #include <stdio.h>
 
-#define DDR_A DDRB
-#define DDR_B DDRB
-#define DDR_C DDRB
-#define DDR_D DDRB
-
-#define PORT_A PORTB
-#define PORT_B PORTB
-#define PORT_C PORTB
-#define PORT_D PORTB
-
 #define PIN_A PB1
 #define PIN_B PB2
 #define PIN_C PB3
@@ -23,8 +13,14 @@ char text_buffer[32];
 const uint16_t RANGES[16] = {0, 31250, 15625, 7102, 3397, 1645, 772, 368, 176, 84, 40, 19, 9, 4, 2, 1};
 const uint16_t FREQS[16] = {0, 1, 2, 4, 9, 19, 40, 85, 178, 372, 781, 1645, 3472, 7813, 15625, 31250};
 
+const uint16_t THOLD[16] = {85, 170, 256, 341, 426, 512, 597, 682, 725,
+	 									768, 810, 853, 896, 938, 981, 1023};
+
+
 volatile uint16_t counterA, counterB, counterC, counterD;
 volatile uint16_t interA, interB, interC, interD;
+
+uint8_t port_bits;
 
 ISR(TIMER0_OVF_vect)
 {
@@ -33,26 +29,30 @@ ISR(TIMER0_OVF_vect)
 	counterC += 1;
 	counterD += 1;
 
+	port_bits = PORTB;
+
 	if((counterA == interA) & (interA > 0))
 	{
-		PORT_A ^= (1 << PIN_A);
+		port_bits ^= (1 << PIN_A);
 		counterA = 0;
 	}
 	if((counterB == interB) & (interB > 0))
 	{
-		PORT_B ^= (1 << PIN_B);
+		port_bits ^= (1 << PIN_B);
 		counterB = 0;
 	}
 	if((counterC == interC) & (interC > 0))
 	{
-		PORT_C ^= (1 << PIN_C);
+		port_bits ^= (1 << PIN_C);
 		counterC = 0;
 	}
 	if((counterD == interD) & (interD > 0))
 	{
-		PORT_D ^= (1 << PIN_D);
+		port_bits ^= (1 << PIN_D);
 		counterD = 0;
 	}
+
+	PORTB = port_bits;
 }
 
 void initADC(void)
@@ -69,10 +69,7 @@ void initTimer(void)
 
 void initOuts(void)
 {
-	DDR_A |= (1 << PIN_A);
-	DDR_B |= (1 << PIN_B);
-	DDR_C |= (1 << PIN_C);
-	DDR_D |= (1 << PIN_D);
+	DDRB |= (1 << PIN_A) | (1 << PIN_B) | (1 << PIN_C) | (1 << PIN_D);
 }
 
 uint16_t readADC(uint8_t channel)
@@ -87,9 +84,23 @@ uint16_t readADC(uint8_t channel)
   return (ADC);
 }
 
+// uint8_t getRange(uint8_t channel)
+// {
+//  return readADC(channel) / 64;
+// }
+
 uint8_t getRange(uint8_t channel)
 {
- return readADC(channel) / 64;
+	uint8_t i;
+	uint16_t adc = readADC(channel);
+	for(i = 0; i < 16; i++)
+	{
+		if(adc <= THOLD[i])
+		{
+			return i;
+		}
+	}
+ return 0xFF;
 }
 
 void resetCounters(void)
@@ -101,10 +112,7 @@ void resetCounters(void)
 	counterD = 0;
 
 	// start low
-	PORT_A &= ~(1 << PIN_A);
-	PORT_B &= ~(1 << PIN_B);
-	PORT_C &= ~(1 << PIN_C);
-	PORT_D &= ~(1 << PIN_D);
+	PORTB &= ~((1 << PIN_A) | (1 << PIN_B) | (1 << PIN_C) | (1 << PIN_D));
 }
 
 void welcomeScreen(void)
