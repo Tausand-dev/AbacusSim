@@ -13,9 +13,8 @@ char text_buffer[32];
 const uint16_t RANGES[16] = {0, 31250, 15625, 7102, 3397, 1645, 772, 368, 176, 84, 40, 19, 9, 4, 2, 1};
 const uint16_t FREQS[16] = {0, 1, 2, 4, 9, 19, 40, 85, 178, 372, 781, 1645, 3472, 7813, 15625, 31250};
 
-const uint16_t THOLD[16] = {85, 170, 256, 341, 426, 512, 597, 682, 725,
-	 									768, 810, 853, 896, 938, 981, 1023};
-
+const uint16_t THOLD[16] = {54, 109, 164, 219, 274, 329, 384, 438, 512,
+															 585, 658, 731, 804, 877, 950, 1023};
 
 volatile uint16_t counterA, counterB, counterC, counterD;
 volatile uint16_t interA, interB, interC, interD;
