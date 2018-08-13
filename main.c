@@ -187,9 +187,9 @@ int main(void)
 		}
 
 		if(reset)
-		{
+		{`	`
 			resetCounters();
-			toLCD(FREQS[cA], FREQS[cB], FREQS[cC], FREQS[cD]);
+			toLCD(FREQS[cD], FREQS[cC], FREQS[cB], FREQS[cA`		``]);
 		}
 		_delay_ms(100);
 	}
