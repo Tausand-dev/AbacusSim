@@ -3,10 +3,10 @@
 #include <avr/interrupt.h>
 #include <stdio.h>
 
-#define PIN_A PB1
-#define PIN_B PB2
-#define PIN_C PB3
-#define PIN_D PB4
+#define PIN_A PB4
+#define PIN_B PB3
+#define PIN_C PB2
+#define PIN_D PB1
 
 char text_buffer[32];
 
@@ -187,9 +187,9 @@ int main(void)
 		}
 
 		if(reset)
-		{`	`
+		{
 			resetCounters();
-			toLCD(FREQS[cD], FREQS[cC], FREQS[cB], FREQS[cA`		``]);
+			toLCD(FREQS[cD], FREQS[cC], FREQS[cB], FREQS[cA]);
 		}
 		_delay_ms(100);
 	}
